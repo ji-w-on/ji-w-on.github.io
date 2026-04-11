@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(open \"/Users/jangjiwon/Desktop/my portfolio/index.html\")"
+    ]
+  }
+}
