@@ -30,9 +30,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <!-- Home 섹션 -->
   <section id="home" class="section active">
     <div class="home-header">
-      <p class="home-title">PORTFOLIO →</p>
+      <p class="home-title">PORTFOLIO</p>
+      <p class="home-title-right">JIWON</p>
     </div>
-    <div class="home-grid">
+    <div class="home-grid-outer">
+      <button class="home-nav-btn home-nav-prev is-hidden" id="homePrev" aria-label="이전">
+        <svg width="24" height="24" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M11 4L6 9L11 14" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="home-grid">
 
       <!-- Card 1 -->
       <div class="home-card-wrap"
@@ -160,6 +167,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
       </div>
 
+      </div>
+      <button class="home-nav-btn home-nav-next" id="homeNext" aria-label="다음">
+        <svg width="24" height="24" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M7 4L12 9L7 14" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
     </div>
   </section>
 
@@ -221,8 +234,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="side-panel-inner">
 
       <div class="sp-header">
-        <span class="sp-label" id="spLabel"></span>
-        <button class="sp-close" id="spClose">Close</button>
+        <button class="sp-close" id="spClose" aria-label="닫기">
+          <svg width="24" height="24" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M15 5L5 15M5 5L15 15" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
       </div>
 
       <div class="sp-title-block">
@@ -231,8 +247,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <p class="sp-year" id="spYear"></p>
       </div>
 
-      <div class="sp-image" id="spImage"></div>
       <p class="sp-desc" id="spDesc"></p>
+      <div class="sp-gallery" id="spGallery"></div>
 
     </div>
   </div>

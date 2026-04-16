@@ -273,7 +273,7 @@ body {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.18);
+  background: rgba(0,0,0,0.7);
   z-index: 200;
   opacity: 0;
   transition: opacity 0.35s ease;
@@ -286,19 +286,31 @@ body {
 
 .side-panel {
   position: fixed;
-  top: 0;
+  bottom: 0;
+  left: 0;
   right: 0;
-  width: 100vw;
-  height: 100vh;
+  height: 88vh;
   background: var(--bg);
   z-index: 300;
-  transform: translateX(100%);
+  border-radius: 20px 20px 0 0;
+  transform: translateY(100%);
   transition: transform 0.42s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
 }
 
 .side-panel.active {
-  transform: translateX(0);
+  transform: translateY(0);
+}
+
+.side-panel-inner::before {
+  content: '';
+  display: block;
+  width: 36px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 12px auto 4px;
+  flex-shrink: 0;
 }
 
 .side-panel-inner {
@@ -310,20 +322,20 @@ body {
 
 .sp-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
-  padding: 20px 36px;
-  border-bottom: 1px solid var(--border);
+  padding: 12px 24px;
   flex-shrink: 0;
 }
 
 .sp-title-block {
-  padding: 40px 36px 32px;
+  padding: 0 36px 24px;
   flex-shrink: 0;
 }
 
 .sp-category {
   font-size: 11px;
+  font-family: 'Pretendard', sans-serif;
   color: var(--muted);
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -332,8 +344,9 @@ body {
 
 .sp-title {
   font-size: clamp(28px, 3.2vw, 48px);
-  font-style: italic;
-  font-weight: 400;
+  font-family: 'Pretendard', sans-serif;
+  font-style: normal;
+  font-weight: 600;
   line-height: 1.15;
   letter-spacing: -0.02em;
   color: var(--text);
@@ -342,6 +355,7 @@ body {
 
 .sp-year {
   font-size: 12px;
+  font-family: 'Pretendard', sans-serif;
   color: var(--muted);
 }
 
@@ -355,16 +369,16 @@ body {
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 11px;
-  font-family: inherit;
-  color: var(--muted);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  width: 40px;
+  height: 40px;
   padding: 0;
-  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 1;
 }
 
-.sp-close:hover { color: var(--text); }
+.sp-close:hover { opacity: 1; }
 
 .sp-image {
   width: 100%;
@@ -373,10 +387,26 @@ body {
 }
 
 .sp-desc {
-  padding: 28px 36px 48px;
-  font-size: 12px;
-  line-height: 1.9;
+  padding: 16px 36px 24px;
+  font-size: 14px;
+  line-height: 24px;
   color: var(--muted);
+}
+
+.sp-gallery {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 0 36px 48px;
+}
+
+.sp-gallery-item {
+  aspect-ratio: 3/2;
+  background: #ebebeb;
+  border-radius: 8px;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
 }
 
 /* 클릭 가능한 home 이미지 아이템 */
@@ -389,16 +419,48 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
+/* 바텀 시트 스크롤바: 스크롤 시에만 표시 */
+.side-panel-inner {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+.side-panel-inner::-webkit-scrollbar { width: 4px; }
+.side-panel-inner::-webkit-scrollbar-track { background: transparent; }
+.side-panel-inner::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 2px;
+}
+.side-panel-inner.is-scrolling {
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+}
+.side-panel-inner.is-scrolling::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+}
+
 /* ── Home 타이틀 ── */
 .home-header {
   padding: 32px 32px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
 }
 
 .home-title {
-  font-size: 40px;
+  font-size: 100px;
+  line-height: 100px;
   font-weight: 600;
   font-family: 'Pretendard', sans-serif;
   color: #121212;
+  letter-spacing: -0.01em;
+  text-transform: none;
+}
+
+.home-title-right {
+  font-size: 100px;
+  line-height: 100px;
+  font-weight: 600;
+  font-family: 'Pretendard', sans-serif;
+  color: #D3D5D7;
   letter-spacing: -0.01em;
   text-transform: none;
 }
@@ -409,14 +471,52 @@ body {
   padding-top: 0;
 }
 
+.home-grid-outer {
+  position: relative;
+}
+
+.home-nav-btn {
+  position: absolute;
+  top: min(325px, calc(50vh - 127px));
+  transform: translateY(-50%);
+  width: 56px;
+  height: 56px;
+  border-radius: 100px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.07);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.25s ease, background 0.2s ease;
+  z-index: 10;
+}
+
+.home-grid-outer:hover .home-nav-btn { opacity: 1; }
+.home-nav-btn:hover { background: rgba(255, 255, 255, 0.88); }
+.home-nav-btn.is-hidden {
+  opacity: 0 !important;
+  pointer-events: none;
+}
+
+.home-nav-prev { left: 8px; }
+.home-nav-next { right: 8px; }
+
 .home-grid {
   display: flex;
   align-items: flex-start;
-  overflow-x: auto;
-  overflow-y: visible;
-  gap: 20px;
+  overflow: hidden;
+  gap: 16px;
   padding: 0 32px 32px;
-  scrollbar-width: none;
+  cursor: grab;
+}
+
+.home-grid:active {
+  cursor: grabbing;
 }
 
 .home-grid::-webkit-scrollbar { display: none; }
@@ -429,7 +529,7 @@ body {
 .home-card-img-box {
   /* 기본: 정사각형, 최대 366px — 화면 높이 부족 시 비율대로 축소 */
   aspect-ratio: 1 / 1;
-  height: min(366px, calc(100vh - 290px));
+  height: min(366px, calc(100vh - 254px));
   width: auto;
   overflow: hidden;
   border-radius: 16px;
@@ -438,17 +538,17 @@ body {
 
 .home-card-wrap.is-active .home-card-img-box {
   aspect-ratio: 756 / 650;
-  height: min(650px, calc(100vh - 290px));
+  height: min(650px, calc(100vh - 254px));
 }
 
 .home-card-wrap.is-second .home-card-img-box {
   aspect-ratio: 366 / 275;
-  height: min(275px, calc(100vh - 290px));
+  height: min(275px, calc(100vh - 254px));
 }
 
 .home-card-wrap.is-third .home-card-img-box {
   aspect-ratio: 1 / 1;
-  height: min(366px, calc(100vh - 290px));
+  height: min(366px, calc(100vh - 254px));
 }
 
 .home-card-text {
@@ -475,31 +575,38 @@ body {
 /* ── About 탭 연락처 ── */
 .about-top-info {
   position: absolute;
-  top: 24px;
+  top: 32px;
   left: 32px;
   z-index: 20;
   pointer-events: none;
 }
 
 .about-contact {
-  margin-top: 14px;
+  margin-top: 12px;
   font-size: 12px;
   font-family: 'Pretendard', sans-serif;
   color: #9FA6A8;
-  line-height: 1.8;
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  line-height: 1.6;
 }
 
 /* ── Home 섹션 (About 탭 전체 화면) ── */
+#project.section.active {
+  padding-top: 0;
+}
+
 .home-wrap {
   position: relative;
   width: 100%;
-  height: calc(100vh - 90px);
+  height: 100vh;
   overflow: hidden;
   background: var(--bg);
 }
 
 .home-intro {
-  font-size: 16px;
+  font-size: 22px;
   font-family: 'Pretendard', sans-serif;
   font-weight: 500;
   color: #1a1a1a;
@@ -574,5 +681,103 @@ body {
   .col-fill .about-image-wrap {
     flex: unset;
     aspect-ratio: 4/3 !important;
+  }
+
+  /* ── 모바일 nav 위치 ── */
+  .nav {
+    top: 24px;
+  }
+
+  /* ── Home 타이틀 (모바일) ── */
+  #home.section.active {
+    padding-top: 90px;
+  }
+
+  .home-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 16px 20px 16px;
+    gap: 0;
+  }
+
+  .home-title,
+  .home-title-right {
+    font-size: 48px;
+    line-height: 56px;
+  }
+
+  /* 화살표 버튼 숨김 */
+  .home-nav-btn { display: none; }
+
+  /* ── 카드 그리드: 세로 스크롤 ── */
+  .home-grid {
+    flex-direction: column;
+    overflow: visible;
+    padding: 0 20px 40px;
+    gap: 32px;
+    cursor: default;
+  }
+
+  .home-card-wrap {
+    width: 100%;
+  }
+
+  .sp-header {
+    padding: 12px 24px;
+  }
+
+  .sp-title-block {
+    padding: 0 24px 24px;
+  }
+
+  .sp-desc {
+    padding: 20px 24px 20px;
+  }
+
+  .sp-gallery {
+    grid-template-columns: 1fr;
+    padding: 0 24px 40px;
+    gap: 6px;
+  }
+
+  /* 모든 카드 이미지 4:3 고정 */
+  .home-card-img-box,
+  .home-card-wrap.is-active .home-card-img-box,
+  .home-card-wrap.is-second .home-card-img-box,
+  .home-card-wrap.is-third .home-card-img-box {
+    aspect-ratio: 4 / 3;
+    height: auto;
+    width: 100%;
+    transition: none;
+  }
+
+  /* ── About 탭 모바일: 사진 흩뿌리기 ── */
+  #project .home-wrap {
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  #project .about-top-info {
+    position: absolute;
+    top: 112px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    pointer-events: auto;
+    white-space: nowrap;
+  }
+
+  #project .home-center {
+    display: none;
+  }
+
+  #project .about-top-info {
+    z-index: 30;
+  }
+
+  #project .trail-container {
+    position: absolute;
+    inset: 0;
   }
 }
