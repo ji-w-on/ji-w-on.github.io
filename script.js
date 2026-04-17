@@ -172,7 +172,11 @@ function openPanel(item) {
   const year     = item.dataset.year     || '';
   const category = item.dataset.category || '';
   const desc     = item.dataset.desc     || '';
-  const images   = item.dataset.images   ? item.dataset.images.split(',') : [];
+  const thumb    = item.dataset.thumb || '';
+  const rest     = item.dataset.images
+    ? item.dataset.images.split(',').map(s => s.trim()).sort((a, b) => a.localeCompare(b))
+    : [];
+  const images   = [...(thumb ? [thumb] : []), ...rest];
 
   spTitle.textContent    = title;
   spCategory.textContent = category;
@@ -181,14 +185,51 @@ function openPanel(item) {
 
   // 갤러리 채우기
   spGallery.innerHTML = '';
-  const count = images.length || 4;
-  for (let i = 0; i < count; i++) {
-    const el = document.createElement('div');
-    el.className = 'sp-gallery-item';
-    if (images[i]) {
-      el.style.backgroundImage = `url('${images[i]}')`;
-    }
-    spGallery.appendChild(el);
+  if (images.length) {
+    const fullSet = new Set(
+      (item.dataset.fullImages || '').split(',').map(s => s.trim()).filter(Boolean)
+    );
+    const equalSet = new Set(
+      (item.dataset.equalImages || '').split(',').map(s => s.trim()).filter(Boolean)
+    );
+    const solidSet = new Set(
+      (item.dataset.solidImages || '').split(',').map(s => s.trim()).filter(Boolean)
+    );
+
+    let pairIdx = 0;
+    images.forEach((src, i) => {
+      const filename     = src.trim().split('/').pop();
+      const posInGroup   = i % 3;
+      const isForceFull  = fullSet.has(filename);
+      const isEqual      = equalSet.has(filename);
+      const isSolid      = solidSet.has(filename);
+      const isNatFull    = posInGroup === 0 && !isEqual;
+
+      const el = document.createElement('div');
+      let cls = 'sp-gallery-item';
+
+      if (isForceFull || isNatFull) {
+        cls += ' sp-gallery-item--full';
+        pairIdx = 0;
+      } else if (isEqual) {
+        cls += ' sp-gallery-item--equal';
+      } else {
+        cls += pairIdx % 2 === 0 ? ' sp-gallery-item--left' : ' sp-gallery-item--right';
+        pairIdx++;
+      }
+
+      if (isSolid) cls += ' sp-gallery-item--solid';
+      el.className = cls;
+
+      if (!isSolid) {
+        const img = document.createElement('img');
+        img.src = src.trim();
+        img.alt = '';
+        el.appendChild(img);
+      }
+
+      spGallery.appendChild(el);
+    });
   }
 
   overlay.classList.add('active');
