@@ -174,7 +174,7 @@ function openPanel(item) {
   const desc     = item.dataset.desc     || '';
   const thumb    = item.dataset.thumb || '';
   const rest     = item.dataset.images
-    ? item.dataset.images.split(',').map(s => s.trim()).sort((a, b) => a.localeCompare(b))
+    ? item.dataset.images.split(',').map(s => s.trim())
     : [];
   const images   = [...(thumb ? [thumb] : []), ...rest];
 
@@ -192,24 +192,48 @@ function openPanel(item) {
     const equalSet = new Set(
       (item.dataset.equalImages || '').split(',').map(s => s.trim()).filter(Boolean)
     );
+    const squareSet = new Set(
+      (item.dataset.squareImages || '').split(',').map(s => s.trim()).filter(Boolean)
+    );
+    const mobileSquareSet = new Set(
+      (item.dataset.mobileSquareImages || '').split(',').map(s => s.trim()).filter(Boolean)
+    );
+    const naturalEqualSet = new Set(
+      (item.dataset.naturalEqualImages || '').split(',').map(s => s.trim()).filter(Boolean)
+    );
     const solidSet = new Set(
       (item.dataset.solidImages || '').split(',').map(s => s.trim()).filter(Boolean)
     );
 
     let pairIdx = 0;
     images.forEach((src, i) => {
-      const filename     = src.trim().split('/').pop();
+      const srcFull    = src.trim();
+      const srcParts   = srcFull.split('|');
+      const desktopSrc = srcParts[0].trim();
+      const mobileSrc  = srcParts[1] ? srcParts[1].trim() : null;
+      const filename   = desktopSrc.split('/').pop();
+
       const posInGroup   = i % 3;
-      const isForceFull  = fullSet.has(filename);
-      const isEqual      = equalSet.has(filename);
-      const isSolid      = solidSet.has(filename);
+      const isForceFull    = fullSet.has(filename);
+      const isEqual        = equalSet.has(filename);
+      const isSquare       = squareSet.has(filename);
+      const isMobileSquare = mobileSquareSet.has(filename);
+      const isNatEqual     = naturalEqualSet.has(filename);
+      const isSolid        = solidSet.has(filename);
       const isNatFull    = posInGroup === 0 && !isEqual;
 
       const el = document.createElement('div');
       let cls = 'sp-gallery-item';
 
+      const isNaturalFull = item.dataset.naturalFull === 'true';
       if (isForceFull || isNatFull) {
         cls += ' sp-gallery-item--full';
+        if (i === 0) {
+          if (item.dataset.naturalThumb === 'true') cls += ' sp-gallery-item--thumb-natural';
+          else cls += ' sp-gallery-item--thumb';
+        } else if (isNaturalFull) {
+          cls += ' sp-gallery-item--full-natural';
+        }
         pairIdx = 0;
       } else if (isEqual) {
         cls += ' sp-gallery-item--equal';
@@ -218,14 +242,31 @@ function openPanel(item) {
         pairIdx++;
       }
 
-      if (isSolid) cls += ' sp-gallery-item--solid';
+      if (isSolid)        cls += ' sp-gallery-item--solid';
+      if (isSquare)       cls += ' sp-gallery-item--square';
+      if (isMobileSquare) cls += ' sp-gallery-item--mobile-square';
+      if (isNatEqual)     cls += ' sp-gallery-item--equal-natural';
+      if (mobileSrc)      cls += ' sp-gallery-item--responsive';
       el.className = cls;
 
       if (!isSolid) {
-        const img = document.createElement('img');
-        img.src = src.trim();
-        img.alt = '';
-        el.appendChild(img);
+        if (mobileSrc) {
+          const picture = document.createElement('picture');
+          const source  = document.createElement('source');
+          source.media  = '(max-width: 768px)';
+          source.srcset = mobileSrc;
+          const img = document.createElement('img');
+          img.src = desktopSrc;
+          img.alt = '';
+          picture.appendChild(source);
+          picture.appendChild(img);
+          el.appendChild(picture);
+        } else {
+          const img = document.createElement('img');
+          img.src = desktopSrc;
+          img.alt = '';
+          el.appendChild(img);
+        }
       }
 
       spGallery.appendChild(el);

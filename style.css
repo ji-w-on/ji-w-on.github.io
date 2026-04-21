@@ -410,7 +410,14 @@ body {
   background: #ebebeb;
 }
 
-.sp-gallery-item img {
+.sp-gallery-item img,
+.sp-gallery-item picture {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.sp-gallery-item picture img {
   width: 100%;
   height: auto;
   display: block;
@@ -442,6 +449,18 @@ body {
 /* equal(d,e): 동일 1/2 너비 */
 .sp-gallery-item--equal {
   grid-column: span 3;
+}
+
+/* square: 1:1 비율 고정 */
+.sp-gallery-item--square {
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+}
+
+.sp-gallery-item--square img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 /* solid: 이미지 없는 플레이스홀더 */
@@ -561,15 +580,21 @@ body {
 
 .home-grid::-webkit-scrollbar { display: none; }
 
+.home-grid::after {
+  content: '';
+  flex-shrink: 0;
+  width: calc(100vw - 64px);
+}
+
 .home-card-wrap {
   flex-shrink: 0;
   cursor: pointer;
 }
 
 .home-card-img-box {
-  /* 기본: 정사각형, 최대 366px — 화면 높이 부족 시 비율대로 축소 */
-  aspect-ratio: 1 / 1;
-  height: min(366px, calc(100vh - 254px));
+  /* 기본: is-second와 동일 크기 */
+  aspect-ratio: 4 / 3;
+  height: min(420px, calc(100vh - 254px));
   width: auto;
   overflow: hidden;
   border-radius: 16px;
@@ -582,13 +607,13 @@ body {
 }
 
 .home-card-wrap.is-second .home-card-img-box {
-  aspect-ratio: 366 / 275;
-  height: min(275px, calc(100vh - 254px));
+  aspect-ratio: 4 / 3;
+  height: min(420px, calc(100vh - 254px));
 }
 
 .home-card-wrap.is-third .home-card-img-box {
-  aspect-ratio: 1 / 1;
-  height: min(366px, calc(100vh - 254px));
+  aspect-ratio: 4 / 3;
+  height: min(420px, calc(100vh - 254px));
 }
 
 .home-card-text {
@@ -785,10 +810,21 @@ body {
 
   .sp-gallery-item,
   .sp-gallery-item--left,
-  .sp-gallery-item--right,
-  .sp-gallery-item--equal {
+  .sp-gallery-item--right {
     grid-column: 1 / -1;
     aspect-ratio: unset;
+  }
+
+  .sp-gallery-item--equal {
+    grid-column: 1 / -1;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+  }
+
+  .sp-gallery-item--equal img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
   .sp-gallery-item--solid {
@@ -801,10 +837,88 @@ body {
     overflow: hidden;
   }
 
-  .sp-gallery-item--full img {
+  .sp-gallery-item--full img,
+  .sp-gallery-item--full picture,
+  .sp-gallery-item--full picture img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    display: block;
+  }
+
+  .sp-gallery-item--thumb {
+    aspect-ratio: 1 / 1;
+  }
+
+  .sp-gallery-item--thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .sp-gallery-item--thumb-natural {
+    aspect-ratio: unset !important;
+    overflow: hidden;
+  }
+
+  .sp-gallery-item--thumb-natural img {
+    width: 100%;
+    height: auto;
+    object-fit: unset;
+  }
+
+  .sp-gallery-item--full-natural {
+    aspect-ratio: unset;
+    overflow: hidden;
+  }
+
+  .sp-gallery-item--full-natural img {
+    width: 100%;
+    height: auto;
+    object-fit: unset;
+  }
+
+  .sp-gallery-item--equal-natural {
+    aspect-ratio: unset !important;
+  }
+
+  .sp-gallery-item--equal-natural img {
+    width: 100%;
+    height: auto;
+    object-fit: unset;
+  }
+
+  .sp-gallery-item--mobile-square {
+    aspect-ratio: 1 / 1 !important;
+    overflow: hidden;
+  }
+
+  .sp-gallery-item--mobile-square img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .sp-gallery-item--responsive {
+    aspect-ratio: unset;
+  }
+
+  .sp-gallery-item--responsive picture,
+  .sp-gallery-item--responsive picture img {
+    width: 100%;
+    height: auto;
+    object-fit: unset;
+    display: block;
+  }
+
+  .sp-gallery-item--equal picture,
+  .sp-gallery-item--equal picture img,
+  .sp-gallery-item--left picture,
+  .sp-gallery-item--left picture img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
   }
 
   /* 모든 카드 이미지 4:3 고정 */
