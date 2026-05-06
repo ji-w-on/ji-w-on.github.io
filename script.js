@@ -204,6 +204,9 @@ function openPanel(item) {
     const solidSet = new Set(
       (item.dataset.solidImages || '').split(',').map(s => s.trim()).filter(Boolean)
     );
+    const naturalFullSet = new Set(
+      (item.dataset.naturalFullImages || '').split(',').map(s => s.trim()).filter(Boolean)
+    );
 
     let pairIdx = 0;
     images.forEach((src, i) => {
@@ -220,6 +223,7 @@ function openPanel(item) {
       const isMobileSquare = mobileSquareSet.has(filename);
       const isNatEqual     = naturalEqualSet.has(filename);
       const isSolid        = solidSet.has(filename);
+      const isNatFullForce = naturalFullSet.has(filename);
       const isNatFull    = posInGroup === 0 && !isEqual;
 
       const el = document.createElement('div');
@@ -231,7 +235,7 @@ function openPanel(item) {
         if (i === 0) {
           if (item.dataset.naturalThumb === 'true') cls += ' sp-gallery-item--thumb-natural';
           else cls += ' sp-gallery-item--thumb';
-        } else if (isNaturalFull) {
+        } else if (isNaturalFull || isNatFullForce) {
           cls += ' sp-gallery-item--full-natural';
         }
         pairIdx = 0;
@@ -289,7 +293,7 @@ homeItems.forEach((item) => {
   item.addEventListener('click', () => openPanel(item));
 });
 
-// ── Home 카드 사이즈 전환 (버튼 + 드래그 네비게이션) ──
+// ── Home 카드 사이즈 전환 (버튼 + 드래그 + 무한루프 네비게이션) ──
 (function initHomeCards() {
   const grid  = document.querySelector('#home .home-grid');
   if (!grid) return;
@@ -297,39 +301,66 @@ homeItems.forEach((item) => {
   const cards = [...grid.querySelectorAll('.home-card-wrap')];
   if (!cards.length) return;
 
-  const PADDING   = 32;
-  let currentIdx  = 0;
-  let isUpdating  = false;
+  const PADDING  = 32;
+  let currentIdx = 0;
+  let isUpdating = false;
 
-  // 드래그 상태
   let isDragging      = false;
   let dragStartX      = 0;
   let dragStartScroll = 0;
   let hasDragged      = false;
 
+  // 무한루프용 클론: 마지막 카드를 앞에, 첫·두 번째 카드를 뒤에 추가
+  const lastClone   = cards[cards.length - 1].cloneNode(true);
+  const firstClone  = cards[0].cloneNode(true);
+  const secondClone = cards[1].cloneNode(true);
+  lastClone.classList.add('is-clone');
+  firstClone.classList.add('is-clone');
+  secondClone.classList.add('is-clone');
+  grid.insertBefore(lastClone, cards[0]);
+  grid.appendChild(firstClone);
+  grid.appendChild(secondClone);
+
+  // 클론 클릭 → 실제 카드 패널 열기
+  lastClone.addEventListener('click',   () => openPanel(cards[cards.length - 1]));
+  firstClone.addEventListener('click',  () => openPanel(cards[0]));
+  secondClone.addEventListener('click', () => openPanel(cards[1]));
+
+  // snap 계산용 전체 노드 순서: [lastClone, ...cards, firstClone, secondClone]
+  const allNodes = [lastClone, ...cards, firstClone, secondClone];
+
   function applyClasses(idx) {
+    const n = cards.length;
     cards.forEach((card, i) => {
       card.classList.remove('is-active', 'is-second', 'is-third');
-      if      (i === idx)     card.classList.add('is-active');
-      else if (i === idx + 1) card.classList.add('is-second');
-      else if (i === idx + 2) card.classList.add('is-third');
+      if      (i === idx)                card.classList.add('is-active');
+      else if (i === (idx + 1) % n)     card.classList.add('is-second');
+      else if (i === (idx + 2) % n)     card.classList.add('is-third');
     });
+    // is-active는 클론에 미적용 (width 변동 → offsetLeft 오차 방지)
+    // is-second/third는 크기 동일하므로 클론에 적용해도 안전
+    firstClone.classList.remove('is-second', 'is-third');
+    secondClone.classList.remove('is-second', 'is-third');
+    if      (idx === n - 1) { firstClone.classList.add('is-second'); secondClone.classList.add('is-third'); }
+    else if (idx === n - 2) { firstClone.classList.add('is-third'); }
   }
 
   function updateButtons() {
-    const prev = document.getElementById('homePrev');
-    const next = document.getElementById('homeNext');
-    if (prev) prev.classList.toggle('is-hidden', currentIdx === 0);
-    if (next) next.classList.toggle('is-hidden', currentIdx >= cards.length - 1);
+    document.getElementById('homePrev')?.classList.remove('is-hidden');
+    document.getElementById('homeNext')?.classList.remove('is-hidden');
+  }
+
+  function silentJump(scrollPos) {
+    grid.scrollLeft = scrollPos;
   }
 
   function navigateTo(newIdx) {
     if (isUpdating) return;
-    newIdx = Math.max(0, Math.min(newIdx, cards.length - 1));
+    const n = cards.length;
+    newIdx = ((newIdx % n) + n) % n;
     isUpdating = true;
 
     const prevBox = cards[currentIdx]?.querySelector('.home-card-img-box');
-
     if (newIdx !== currentIdx) {
       if (prevBox) prevBox.style.transition = 'none';
       currentIdx = newIdx;
@@ -348,18 +379,36 @@ homeItems.forEach((item) => {
 
   function snapToNearest() {
     const scroll = grid.scrollLeft;
-    let nearestIdx = 0;
+    let nearestIdx = 1;
     let nearestDist = Infinity;
-    cards.forEach((card, i) => {
-      const dist = Math.abs((card.offsetLeft - PADDING) - scroll);
+    allNodes.forEach((node, i) => {
+      const dist = Math.abs((node.offsetLeft - PADDING) - scroll);
       if (dist < nearestDist) { nearestDist = dist; nearestIdx = i; }
     });
-    navigateTo(nearestIdx);
+
+    if (nearestIdx === 0) {
+      // lastClone → 실제 마지막 카드로 순간이동
+      currentIdx = cards.length - 1;
+      applyClasses(currentIdx);
+      silentJump(cards[currentIdx].offsetLeft - PADDING);
+      setTimeout(() => { isUpdating = false; }, 100);
+    } else if (nearestIdx > cards.length) {
+      // firstClone(n+1) 또는 secondClone(n+2) → 실제 0번 또는 1번 카드로 순간이동
+      currentIdx = nearestIdx - cards.length - 1;
+      applyClasses(currentIdx);
+      silentJump(cards[currentIdx].offsetLeft - PADDING);
+      setTimeout(() => { isUpdating = false; }, 100);
+    } else {
+      navigateTo(nearestIdx - 1);
+    }
   }
 
-  // 초기 상태
+  // 초기 상태: 첫 번째 실제 카드로 스크롤
   applyClasses(0);
   updateButtons();
+  requestAnimationFrame(() => {
+    grid.scrollLeft = cards[0].offsetLeft - PADDING;
+  });
 
   // 버튼 네비게이션
   document.getElementById('homePrev')
@@ -367,7 +416,7 @@ homeItems.forEach((item) => {
   document.getElementById('homeNext')
     ?.addEventListener('click', () => navigateTo(currentIdx + 1));
 
-  // 드래그 스크롤
+  // 마우스 드래그
   grid.addEventListener('mousedown', (e) => {
     if (e.button !== 0) return;
     isDragging = true;
@@ -389,6 +438,27 @@ homeItems.forEach((item) => {
     if (!isDragging) return;
     isDragging = false;
     grid.style.cursor = '';
+    if (hasDragged) snapToNearest();
+  });
+
+  // 터치 스와이프
+  grid.addEventListener('touchstart', (e) => {
+    isDragging = true;
+    hasDragged = false;
+    dragStartX = e.touches[0].clientX;
+    dragStartScroll = grid.scrollLeft;
+  }, { passive: true });
+
+  grid.addEventListener('touchmove', (e) => {
+    if (!isDragging) return;
+    const dx = e.touches[0].clientX - dragStartX;
+    if (Math.abs(dx) > 4) hasDragged = true;
+    grid.scrollLeft = dragStartScroll - dx;
+  }, { passive: true });
+
+  grid.addEventListener('touchend', () => {
+    if (!isDragging) return;
+    isDragging = false;
     if (hasDragged) snapToNearest();
   });
 
